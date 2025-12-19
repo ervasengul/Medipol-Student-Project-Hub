@@ -75,8 +75,10 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='student_profile')
     student_id = models.CharField(max_length=50, unique=True)
     department = models.CharField(max_length=255)
+    faculty = models.CharField(max_length=255, blank=True)  # Faculty name (e.g., "Faculty of Engineering")
     year = models.CharField(max_length=10, choices=YEAR_CHOICES)
     skills = models.JSONField(default=list, blank=True)
+    interests = models.JSONField(default=list, blank=True)  # Student interests
 
     class Meta:
         verbose_name = 'Student'
@@ -94,8 +96,11 @@ class Faculty(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='faculty_profile')
     faculty_id = models.CharField(max_length=50, unique=True)
     department = models.CharField(max_length=255)
+    faculty = models.CharField(max_length=255, blank=True)  # Faculty name (e.g., "Faculty of Engineering")
     title = models.CharField(max_length=100, blank=True)
     specialization = models.TextField(blank=True)
+    office_location = models.CharField(max_length=255, blank=True)
+    years_of_experience = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = 'Faculty Member'

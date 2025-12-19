@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Milestone, JoinRequest, Feedback
+from .models import Project, Milestone, JoinRequest, Feedback, Task, Meeting
 from users.serializers import StudentProfileSerializer, FacultyProfileSerializer
 
 
@@ -95,6 +95,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     owner_info = StudentProfileSerializer(source='owner', read_only=True)
     supervisor_info = FacultyProfileSerializer(source='supervisor', read_only=True)
     milestones = MilestoneSerializer(many=True, read_only=True)
+    tasks = serializers.SerializerMethodField()
+    meetings = serializers.SerializerMethodField()
     current_team_size = serializers.SerializerMethodField()
     available_slots = serializers.SerializerMethodField()
     team_members = serializers.SerializerMethodField()
@@ -105,8 +107,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'category', 'status', 'posted_date',
             'owner', 'owner_info', 'supervisor', 'supervisor_info',
             'required_skills', 'max_team_size', 'current_team_size', 'available_slots',
-            'start_date', 'expected_duration', 'tags',
-            'milestones', 'team_members',
+            'start_date', 'expected_duration', 'tags', 'objectives', 'requirements',
+            'milestones', 'tasks', 'meetings', 'team_members',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'posted_date', 'owner', 'created_at', 'updated_at']
@@ -116,6 +118,16 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
     def get_available_slots(self, obj):
         return obj.max_team_size - obj.get_current_team_size()
+
+    def get_tasks(self, obj):
+        from .serializers import TaskSerializer
+        tasks = obj.tasks.all()
+        return TaskSerializer(tasks, many=True).data
+
+    def get_meetings(self, obj):
+        from .serializers import MeetingSerializer
+        meetings = obj.meetings.all()
+        return MeetingSerializer(meetings, many=True).data
 
     def get_team_members(self, obj):
         team = obj.get_team()
@@ -130,7 +142,8 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'title', 'description', 'category', 'status', 'supervisor',
-            'required_skills', 'max_team_size', 'start_date', 'expected_duration', 'tags'
+            'required_skills', 'max_team_size', 'start_date', 'expected_duration',
+            'tags', 'objectives', 'requirements'
         ]
 
     def validate_max_team_size(self, value):
@@ -159,7 +172,8 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'title', 'description', 'category', 'status', 'supervisor',
-            'required_skills', 'max_team_size', 'start_date', 'expected_duration', 'tags'
+            'required_skills', 'max_team_size', 'start_date', 'expected_duration',
+            'tags', 'objectives', 'requirements'
         ]
 
     def validate_max_team_size(self, value):
@@ -170,3 +184,36 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                     f"Cannot set max team size below current member count ({current_size})."
                 )
         return value
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    """Serializer for Task model"""
+    assignee_name = serializers.CharField(source='assignee.user.name', read_only=True, allow_null=True)
+    project_title = serializers.CharField(source='project.title', read_only=True)
+
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'project', 'project_title', 'title', 'description',
+            'status', 'priority', 'assignee', 'assignee_name',
+            'due_date', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class MeetingSerializer(serializers.ModelSerializer):
+    """Serializer for Meeting model"""
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    participant_names = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Meeting
+        fields = [
+            'id', 'project', 'project_title', 'title', 'description',
+            'date_time', 'location', 'meeting_link', 'participants',
+            'participant_names', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_participant_names(self, obj):
+        return [p.user.name for p in obj.participants.all()]

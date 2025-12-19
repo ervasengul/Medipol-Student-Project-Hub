@@ -5,8 +5,12 @@ import 'providers/auth_provider.dart';
 import 'providers/project_provider.dart';
 import 'providers/message_provider.dart';
 import 'screens/welcome_page.dart';
+import 'services/api_client.dart';
 
 void main() {
+  // Initialize API client
+  ApiClient().init();
+
   runApp(
     MultiProvider(
       providers: [

@@ -40,6 +40,8 @@ class Project(models.Model):
     start_date = models.DateField(null=True, blank=True)
     expected_duration = models.CharField(max_length=50, blank=True)
     tags = models.JSONField(default=list, blank=True)
+    objectives = models.JSONField(default=list, blank=True)  # Project objectives
+    requirements = models.JSONField(default=list, blank=True)  # Project requirements
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -204,3 +206,80 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback on {self.project.title} by {self.faculty.user.name}"
+
+
+class Task(models.Model):
+    """
+    Represents a task within a project
+    """
+    STATUS_CHOICES = (
+        ('todo', 'To Do'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('blocked', 'Blocked'),
+    )
+
+    PRIORITY_CHOICES = (
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    )
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='todo')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    assignee = models.ForeignKey(
+        Student,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_tasks'
+    )
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Task'
+        verbose_name_plural = 'Tasks'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['project', 'status']),
+            models.Index(fields=['assignee', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.project.title} - {self.title}"
+
+    def mark_complete(self):
+        self.status = 'completed'
+        self.save()
+
+
+class Meeting(models.Model):
+    """
+    Represents a meeting for a project
+    """
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='meetings')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    date_time = models.DateTimeField()
+    location = models.CharField(max_length=255, blank=True)
+    meeting_link = models.URLField(blank=True)  # For online meetings
+    participants = models.ManyToManyField(Student, related_name='meetings', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Meeting'
+        verbose_name_plural = 'Meetings'
+        ordering = ['date_time']
+        indexes = [
+            models.Index(fields=['project', 'date_time']),
+        ]
+
+    def __str__(self):
+        return f"{self.project.title} - {self.title} on {self.date_time.strftime('%Y-%m-%d %H:%M')}"
