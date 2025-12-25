@@ -332,29 +332,37 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
     );
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final projectData = {
-        'title': _titleController.text,
-        'description': _descriptionController.text,
-        'category': _selectedCategory,
-        'faculty': _selectedFaculty,
-        'startDate': _startDate,
-        'duration': _durationController.text,
-        'teamSize': _teamSizeController.text,
-        'roles': _roles,
-        'skills': _skills,
-        'supervisor': _selectedSupervisor,
-      };
-
-      Provider.of<ProjectProvider>(context, listen: false)
-          .createProject(projectData);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Project created successfully!')),
+      final success = await Provider.of<ProjectProvider>(context, listen: false)
+          .createProject(
+        title: _titleController.text,
+        description: _descriptionController.text,
+        category: _selectedCategory ?? 'General',
+        lookingFor: _roles,
+        maxTeamSize: int.tryParse(_teamSizeController.text),
+        startDate: _startDate?.toIso8601String(),
+        duration: _durationController.text,
+        requirements: _skills,
+        objectives: [],
       );
 
-      Navigator.pop(context);
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Project created successfully!')),
+          );
+          Navigator.pop(context);
+        } else {
+          final error = Provider.of<ProjectProvider>(context, listen: false).error;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error ?? 'Failed to create project'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

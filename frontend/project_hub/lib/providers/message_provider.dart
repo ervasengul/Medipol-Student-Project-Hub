@@ -1,93 +1,135 @@
 import 'package:flutter/material.dart';
 import '../models/message.dart';
+import '../services/message_service.dart';
 
 class MessageProvider with ChangeNotifier {
-  final List<Conversation> _conversations = [];
-  final Map<String, List<Message>> _messages = {};
+  final MessageService _messageService = MessageService();
+
+  List<Conversation> _conversations = [];
+  final Map<String, List<Message>> _messagesCache = {};
+  bool _isLoading = false;
+  String? _error;
 
   List<Conversation> get conversations => _conversations;
-  
-  MessageProvider() {
-    _loadConversations();
-  }
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  void _loadConversations() {
-    _conversations.addAll([
-      Conversation(
-        id: '1',
-        name: 'AI Medical Diagnosis Team',
-        lastMessage: 'Great work on the latest update!',
-        lastMessageTime: '2m ago',
-        unreadCount: 3,
-        isOnline: true,
-        isGroup: true,
-      ),
-      Conversation(
-        id: '2',
-        name: 'David Park',
-        lastMessage: 'Can we schedule a meeting tomorrow?',
-        lastMessageTime: '1h ago',
-        unreadCount: 1,
-        isOnline: true,
-        isGroup: false,
-      ),
-      Conversation(
-        id: '3',
-        name: 'Prof. Dr. Michael Roberts',
-        lastMessage: 'Please submit the progress report by Friday',
-        lastMessageTime: '3h ago',
-        unreadCount: 0,
-        isOnline: false,
-        isGroup: false,
-      ),
-    ]);
+  /// Load all conversations from API
+  Future<void> loadConversations() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
 
-    _messages['1'] = [
-      Message(
-        id: '1',
-        conversationId: '1',
-        sender: 'Emily Chen',
-        content: 'Hey team! I\'ve updated the project documentation.',
-        time: '10:30 AM',
-        isOwn: false,
-      ),
-      Message(
-        id: '2',
-        conversationId: '1',
-        sender: 'You',
-        content: 'Thanks Emily! I\'ll review it this afternoon.',
-        time: '10:32 AM',
-        isOwn: true,
-      ),
-      Message(
-        id: '3',
-        conversationId: '1',
-        sender: 'David Park',
-        content: 'Great work on the latest update!',
-        time: '10:35 AM',
-        isOwn: false,
-      ),
-    ];
-  }
+      _conversations = await _messageService.getAllConversations();
 
-  List<Message> getMessages(String conversationId) {
-    return _messages[conversationId] ?? [];
-  }
-
-  Future<void> sendMessage(String conversationId, String content) async {
-    final message = Message(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      conversationId: conversationId,
-      sender: 'You',
-      content: content,
-      time: '${TimeOfDay.now().hour}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
-      isOwn: true,
-    );
-
-    if (_messages[conversationId] == null) {
-      _messages[conversationId] = [];
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      _conversations = [];
+      notifyListeners();
     }
-    _messages[conversationId]!.add(message);
+  }
+
+  /// Get messages for a conversation
+  List<Message> getMessages(String conversationId) {
+    return _messagesCache[conversationId] ?? [];
+  }
+
+  /// Load messages for a conversation from API
+  Future<void> loadMessages(String conversationId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final messages = await _messageService.getMessages(conversationId);
+      _messagesCache[conversationId] = messages;
+
+      // Mark as read
+      await _messageService.markAsRead(conversationId);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Send a message
+  Future<bool> sendMessage(String conversationId, String content) async {
+    try {
+      _error = null;
+
+      final message = await _messageService.sendMessage(
+        conversationId: conversationId,
+        content: content,
+      );
+
+      // Add to local cache
+      if (_messagesCache[conversationId] == null) {
+        _messagesCache[conversationId] = [];
+      }
+      _messagesCache[conversationId]!.add(message);
+
+      // Update conversation's last message
+      final convIndex = _conversations.indexWhere((c) => c.id == conversationId);
+      if (convIndex != -1) {
+        // Update last message info in conversation
+        // Note: You may need to reload conversations to get updated info
+      }
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Create a new conversation
+  Future<Conversation?> createConversation({
+    required List<String> participantIds,
+    String? name,
+    bool isGroup = false,
+  }) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final conversation = await _messageService.createConversation(
+        participantIds: participantIds,
+        name: name,
+        isGroup: isGroup,
+      );
+
+      _conversations.insert(0, conversation);
+
+      _isLoading = false;
+      notifyListeners();
+      return conversation;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Clear error
+  void clearError() {
+    _error = null;
     notifyListeners();
+  }
+
+  /// Refresh conversations
+  Future<void> refresh() async {
+    await loadConversations();
   }
 }

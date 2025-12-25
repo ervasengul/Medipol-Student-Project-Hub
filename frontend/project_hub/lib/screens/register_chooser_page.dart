@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register_student_page.dart';
+import 'register_faculty_page.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RegisterChooserPage extends StatelessWidget {
@@ -90,10 +91,10 @@ class RegisterChooserPage extends StatelessWidget {
                 elevation: 2,
                 child: InkWell(
                   onTap: () {
-                    // TODO: Navigate to faculty registration
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Faculty registration coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterFacultyPage(),
                       ),
                     );
                   },

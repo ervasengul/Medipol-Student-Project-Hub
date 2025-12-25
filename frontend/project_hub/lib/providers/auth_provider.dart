@@ -16,7 +16,7 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  String get userType => _currentUser?.runtimeType == Student ? 'student' : 'faculty';
+  String get userType => _currentUser is Student ? 'student' : 'faculty';
 
   /// Initialize auth state on app start
   Future<void> initializeAuth() async {

@@ -37,6 +37,30 @@ class Project {
     required this.teamMembers,
   });
 
+  factory Project.fromJson(Map<String, dynamic> json) {
+    return Project(
+      id: json['id'].toString(),
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      category: json['category'] ?? '',
+      faculty: json['faculty'] ?? '',
+      creator: json['creator']?['name'] ?? json['creator'] ?? '',
+      status: json['status'] ?? 'Planning',
+      lookingFor: List<String>.from(json['looking_for'] ?? json['lookingFor'] ?? []),
+      currentTeamSize: json['current_team_size'] ?? json['currentTeamSize'] ?? 0,
+      maxTeamSize: json['max_team_size'] ?? json['maxTeamSize'] ?? 5,
+      startDate: json['start_date'] ?? json['startDate'] ?? '',
+      duration: json['duration'] ?? '',
+      progress: json['progress'] ?? 0,
+      requirements: List<String>.from(json['requirements'] ?? []),
+      objectives: List<String>.from(json['objectives'] ?? []),
+      supervisor: json['supervisor']?['name'] ?? json['supervisor'],
+      teamMembers: (json['team_members'] ?? json['teamMembers'] ?? [])
+          .map<TeamMember>((m) => TeamMember.fromJson(m is Map<String, dynamic> ? m : {'id': '0', 'name': m.toString(), 'role': 'Member'}))
+          .toList(),
+    );
+  }
+
   String get teamSizeDisplay => '$currentTeamSize/$maxTeamSize';
 }
 
@@ -52,6 +76,15 @@ class TeamMember {
     required this.role,
     this.avatar,
   });
+
+  factory TeamMember.fromJson(Map<String, dynamic> json) {
+    return TeamMember(
+      id: json['id'].toString(),
+      name: json['name'] ?? json['user']?['name'] ?? '',
+      role: json['role'] ?? 'Member',
+      avatar: json['avatar'] ?? json['user']?['profile_image'],
+    );
+  }
 }
 
 class Task {

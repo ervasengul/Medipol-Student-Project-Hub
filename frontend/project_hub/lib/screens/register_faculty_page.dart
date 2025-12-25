@@ -3,25 +3,25 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'home_page.dart';
 
-class RegisterStudentPage extends StatefulWidget {
-  const RegisterStudentPage({super.key});
+class RegisterFacultyPage extends StatefulWidget {
+  const RegisterFacultyPage({super.key});
 
   @override
-  State<RegisterStudentPage> createState() => _RegisterStudentPageState();
+  State<RegisterFacultyPage> createState() => _RegisterFacultyPageState();
 }
 
-class _RegisterStudentPageState extends State<RegisterStudentPage> {
+class _RegisterFacultyPageState extends State<RegisterFacultyPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _studentIdController = TextEditingController();
+  final _facultyIdController = TextEditingController();
   final _departmentController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _specializationController = TextEditingController();
 
   String? _selectedFaculty;
-  String? _selectedYear;
-  final List<String> _selectedSkills = [];
 
   final List<String> _faculties = [
     'Faculty of Dentistry',
@@ -38,37 +38,16 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
     'International Faculty of Medicine',
   ];
 
-  final List<String> _years = [
-    '1',
-    '2',
-    '3',
-    '4',
-    'grad',
-  ];
-
-  final List<String> _availableSkills = [
-    'Flutter',
-    'React',
-    'Python',
-    'Java',
-    'JavaScript',
-    'UI/UX Design',
-    'Machine Learning',
-    'Data Science',
-    'Mobile Development',
-    'Web Development',
-    'Database Management',
-    'DevOps',
-  ];
-
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _studentIdController.dispose();
+    _facultyIdController.dispose();
     _departmentController.dispose();
+    _titleController.dispose();
+    _specializationController.dispose();
     super.dispose();
   }
 
@@ -79,15 +58,15 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    final success = await authProvider.registerStudent(
+    final success = await authProvider.registerFaculty(
       email: _emailController.text.trim(),
       password: _passwordController.text,
       name: _nameController.text.trim(),
-      studentId: _studentIdController.text.trim(),
+      facultyId: _facultyIdController.text.trim(),
       department: _departmentController.text.trim(),
-      year: _selectedYear!,
       faculty: _selectedFaculty,
-      skills: _selectedSkills.isNotEmpty ? _selectedSkills : null,
+      title: _titleController.text.trim().isNotEmpty ? _titleController.text.trim() : null,
+      specialization: _specializationController.text.trim().isNotEmpty ? _specializationController.text.trim() : null,
     );
 
     if (success && mounted) {
@@ -110,7 +89,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Registration'),
+        title: const Text('Faculty Registration'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -120,7 +99,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Create Student Account',
+                'Create Faculty Account',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -139,7 +118,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Full Name *',
-                  hintText: 'John Doe',
+                  hintText: 'Prof. Dr. John Doe',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
@@ -152,18 +131,18 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
               ),
               const SizedBox(height: 16),
 
-              // Student ID
+              // Faculty ID
               TextFormField(
-                controller: _studentIdController,
+                controller: _facultyIdController,
                 decoration: const InputDecoration(
-                  labelText: 'Student ID *',
-                  hintText: '2021001234',
+                  labelText: 'Faculty ID *',
+                  hintText: 'FAC2024001',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.badge_outlined),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your student ID';
+                    return 'Please enter your faculty ID';
                   }
                   return null;
                 },
@@ -192,6 +171,18 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
               ),
               const SizedBox(height: 16),
 
+              // Title
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Academic Title',
+                  hintText: 'Professor, Associate Professor, etc.',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.school_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Department
               TextFormField(
                 controller: _departmentController,
@@ -199,7 +190,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                   labelText: 'Department *',
                   hintText: 'Computer Engineering',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.school_outlined),
+                  prefixIcon: Icon(Icons.domain_outlined),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -230,77 +221,16 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
               ),
               const SizedBox(height: 16),
 
-              // Year Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedYear,
+              // Specialization
+              TextFormField(
+                controller: _specializationController,
                 decoration: const InputDecoration(
-                  labelText: 'Year *',
+                  labelText: 'Specialization',
+                  hintText: 'Machine Learning, Software Engineering, etc.',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                  prefixIcon: Icon(Icons.science_outlined),
                 ),
-                items: _years.map((year) {
-                  String label;
-                  switch (year) {
-                    case '1':
-                      label = '1st Year (Freshman)';
-                      break;
-                    case '2':
-                      label = '2nd Year (Sophomore)';
-                      break;
-                    case '3':
-                      label = '3rd Year (Junior)';
-                      break;
-                    case '4':
-                      label = '4th Year (Senior)';
-                      break;
-                    case 'grad':
-                      label = 'Graduate Student';
-                      break;
-                    default:
-                      label = year;
-                  }
-                  return DropdownMenuItem(
-                    value: year,
-                    child: Text(label),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() => _selectedYear = value);
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Please select your year';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Skills
-              Text(
-                'Skills (Optional)',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _availableSkills.map((skill) {
-                  final isSelected = _selectedSkills.contains(skill);
-                  return FilterChip(
-                    label: Text(skill),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedSkills.add(skill);
-                        } else {
-                          _selectedSkills.remove(skill);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
+                maxLines: 2,
               ),
               const SizedBox(height: 24),
 

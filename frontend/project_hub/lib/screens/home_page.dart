@@ -26,6 +26,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Load projects when page initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+      projectProvider.loadProjects();
+      projectProvider.loadMyProjects();
+    });
   }
 
   @override
@@ -45,6 +52,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Medipol Project Hub'),
         actions: [
           IconButton(

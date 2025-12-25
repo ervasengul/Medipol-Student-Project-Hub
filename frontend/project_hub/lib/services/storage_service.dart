@@ -6,7 +6,12 @@ class StorageService {
   factory StorageService() => _instance;
   StorageService._internal();
 
-  final _storage = const FlutterSecureStorage();
+  final _storage = const FlutterSecureStorage(
+    webOptions: WebOptions(
+      dbName: 'medipol_project_hub',
+      publicKey: 'medipol_project_hub_public_key',
+    ),
+  );
 
   // Storage keys
   static const String _accessTokenKey = 'access_token';

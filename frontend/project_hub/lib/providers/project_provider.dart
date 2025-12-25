@@ -1,103 +1,151 @@
 import 'package:flutter/material.dart';
 import '../models/project.dart';
+import '../services/project_service.dart';
 
 class ProjectProvider with ChangeNotifier {
+  final ProjectService _projectService = ProjectService();
+
   List<Project> _projects = [];
   List<Project> _myProjects = [];
+  bool _isLoading = false;
+  String? _error;
 
   List<Project> get projects => _projects;
   List<Project> get myProjects => _myProjects;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  ProjectProvider() {
-    _loadProjects();
+  /// Load all projects from API
+  Future<void> loadProjects() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      _projects = await _projectService.getAllProjects();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      _projects = [];
+      notifyListeners();
+    }
   }
 
-  void _loadProjects() {
-    _projects = [
-      Project(
-        id: '1',
-        title: 'AI-Powered Medical Diagnosis Assistant',
-        description: 'Developing a machine learning system to assist doctors in diagnosing diseases using patient data and medical imaging.',
-        category: 'AI & Machine Learning',
-        faculty: 'Faculty of Engineering',
-        creator: 'Emily Chen',
-        status: 'Recruiting',
-        lookingFor: ['ML Engineer', 'Backend Developer', 'UI/UX Designer'],
-        currentTeamSize: 2,
-        maxTeamSize: 5,
-        startDate: 'February 2025',
-        duration: '6 months',
-        progress: 15,
-        requirements: [
-          'Experience with TensorFlow or PyTorch',
-          'Knowledge of medical terminology',
-          'Backend development skills (Python/Node.js)',
-          'UI/UX design experience for healthcare applications'
-        ],
-        objectives: [
-          'Develop a prototype ML model with 85%+ accuracy',
-          'Create a user-friendly interface for doctors',
-          'Implement secure patient data handling',
-          'Complete clinical trial documentation'
-        ],
-        supervisor: 'Prof. Dr. Michael Roberts',
-        teamMembers: [
-          TeamMember(id: '1', name: 'Emily Chen', role: 'Project Lead'),
-          TeamMember(id: '2', name: 'David Park', role: 'ML Engineer'),
-        ],
-      ),
-      Project(
-        id: '2',
-        title: 'Smart Campus Navigation App',
-        description: 'Mobile application for indoor navigation across Medipol campus using AR technology.',
-        category: 'Mobile Development',
-        faculty: 'Faculty of Engineering',
-        creator: 'Sarah Kim',
-        status: 'In Progress',
-        lookingFor: ['AR Developer', 'Mobile Developer'],
-        currentTeamSize: 3,
-        maxTeamSize: 4,
-        startDate: 'January 2025',
-        duration: '4 months',
-        progress: 45,
-        requirements: [
-          'Flutter or React Native experience',
-          'AR development knowledge (ARCore/ARKit)',
-          'UI/UX design skills',
-          'Backend integration experience'
-        ],
-        objectives: [
-          'Implement AR navigation for all campus buildings',
-          'Integrate with campus event system',
-          'Add accessibility features',
-          'Launch beta version for testing'
-        ],
-        supervisor: 'Asst. Prof. Dr. John Davis',
-        teamMembers: [
-          TeamMember(id: '1', name: 'Sarah Kim', role: 'Project Lead'),
-          TeamMember(id: '2', name: 'James Wilson', role: 'Mobile Developer'),
-          TeamMember(id: '3', name: 'Lisa Brown', role: 'UI/UX Designer'),
-        ],
-      ),
-    ];
+  /// Load my projects from API
+  Future<void> loadMyProjects() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
 
-    _myProjects = [_projects[0]];
+      _myProjects = await _projectService.getMyProjects();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      _myProjects = [];
+      notifyListeners();
+    }
   }
 
+  /// Get project by ID
+  Future<Project?> getProjectById(String id) async {
+    try {
+      return await _projectService.getProjectById(id);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Search projects locally (already loaded)
   void searchProjects(String query) {
-    // Implement search logic
+    // This filters the already loaded projects
+    // You can implement more advanced search if needed
     notifyListeners();
   }
 
-  Future<void> createProject(Map<String, dynamic> projectData) async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+  /// Create new project
+  Future<bool> createProject({
+    required String title,
+    required String description,
+    required String category,
+    required List<String> lookingFor,
+    int? maxTeamSize,
+    String? startDate,
+    String? duration,
+    List<String>? requirements,
+    List<String>? objectives,
+  }) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _projectService.createProject(
+        title: title,
+        description: description,
+        category: category,
+        lookingFor: lookingFor,
+        maxTeamSize: maxTeamSize,
+        startDate: startDate,
+        duration: duration,
+        requirements: requirements,
+        objectives: objectives,
+      );
+
+      // Reload projects after creation
+      await loadProjects();
+      await loadMyProjects();
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Request to join a project
+  Future<bool> requestJoinProject(String projectId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _projectService.sendJoinRequest(projectId);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Clear error
+  void clearError() {
+    _error = null;
     notifyListeners();
   }
 
-  Future<void> requestJoinProject(String projectId) async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
-    notifyListeners();
+  /// Refresh all data
+  Future<void> refresh() async {
+    await Future.wait([
+      loadProjects(),
+      loadMyProjects(),
+    ]);
   }
 }
