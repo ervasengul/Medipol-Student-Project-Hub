@@ -23,6 +23,9 @@ class ApiConfig {
   static const String profileEndpoint = '$apiPrefix/auth/profile/';
   static const String changePasswordEndpoint = '$apiPrefix/auth/change-password/';
 
+  // Users endpoints
+  static const String usersEndpoint = '$apiPrefix/users/';
+
   // Projects endpoints
   static const String projectsEndpoint = '$apiPrefix/projects/';
   static const String joinRequestsEndpoint = '$apiPrefix/requests/';
