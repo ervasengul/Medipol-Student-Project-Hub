@@ -19,11 +19,16 @@ from users.permissions import IsStudent
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsProjectOwnerOrReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'category', 'tags']
     ordering_fields = ['posted_date', 'title', 'status']
     ordering = ['-posted_date']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return []  # No authentication required for viewing
+        else:
+            return [IsAuthenticated(), IsProjectOwnerOrReadOnly()]  # Authentication required for create/update/delete
 
     def get_queryset(self):
         queryset = Project.objects.select_related(

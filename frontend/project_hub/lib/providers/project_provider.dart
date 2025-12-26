@@ -82,6 +82,7 @@ class ProjectProvider with ChangeNotifier {
     String? duration,
     List<String>? requirements,
     List<String>? objectives,
+    String? supervisorId,
   }) async {
     try {
       _isLoading = true;
@@ -98,6 +99,7 @@ class ProjectProvider with ChangeNotifier {
         duration: duration,
         requirements: requirements,
         objectives: objectives,
+        supervisorId: supervisorId,
       );
 
       // Reload projects after creation

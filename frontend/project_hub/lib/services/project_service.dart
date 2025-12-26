@@ -66,6 +66,7 @@ class ProjectService {
     String? duration,
     List<String>? requirements,
     List<String>? objectives,
+    String? supervisorId,
   }) async {
     try {
       final response = await _apiClient.post(
@@ -74,12 +75,13 @@ class ProjectService {
           'title': title,
           'description': description,
           'category': category,
-          'looking_for': lookingFor,
+          'tags': lookingFor,
           if (maxTeamSize != null) 'max_team_size': maxTeamSize,
           if (startDate != null) 'start_date': startDate,
-          if (duration != null) 'duration': duration,
-          if (requirements != null) 'requirements': requirements,
+          if (duration != null) 'expected_duration': duration,
+          if (requirements != null) 'required_skills': requirements,
           if (objectives != null) 'objectives': objectives,
+          if (supervisorId != null) 'supervisor': supervisorId,
         },
       );
 

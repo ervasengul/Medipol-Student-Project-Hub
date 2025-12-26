@@ -58,9 +58,17 @@ class StudentRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
+        from django.db import IntegrityError
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+
+        try:
+            user = serializer.save()
+        except IntegrityError:
+            return Response({
+                'email': ['A user with this email already exists.']
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
@@ -84,9 +92,17 @@ class FacultyRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
+        from django.db import IntegrityError
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+
+        try:
+            user = serializer.save()
+        except IntegrityError:
+            return Response({
+                'email': ['A user with this email already exists.']
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)

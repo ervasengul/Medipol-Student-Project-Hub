@@ -179,8 +179,8 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                   final date = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030),
                   );
                   if (date != null) {
                     setState(() => _startDate = date);
@@ -379,6 +379,7 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
         duration: _durationController.text,
         requirements: _skills,
         objectives: [],
+        supervisorId: _selectedSupervisor,
       );
 
       if (mounted) {
