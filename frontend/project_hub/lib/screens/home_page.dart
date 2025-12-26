@@ -56,6 +56,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         title: const Text('Medipol Project Hub'),
         actions: [
           IconButton(
+            icon: const Icon(LucideIcons.bell),
+            onPressed: () {
+              // TODO: Navigate to notifications page
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notifications coming soon!')),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(LucideIcons.messageSquare),
             onPressed: () {
               Navigator.push(

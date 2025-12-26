@@ -38,6 +38,15 @@ class _MessagingPageState extends State<MessagingPage> {
             ),
           ],
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // TODO: Navigate to new conversation page
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Create new conversation coming soon!')),
+            );
+          },
+          child: const Icon(LucideIcons.plus),
+        ),
       );
     }
 
@@ -46,6 +55,15 @@ class _MessagingPageState extends State<MessagingPage> {
       return Scaffold(
         appBar: AppBar(title: const Text('Messages')),
         body: _buildConversationList(messageProvider),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // TODO: Navigate to new conversation page
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Create new conversation coming soon!')),
+            );
+          },
+          child: const Icon(LucideIcons.plus),
+        ),
       );
     }
 
