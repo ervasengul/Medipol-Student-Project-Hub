@@ -14,7 +14,7 @@ class ApiConfig {
   // API Endpoints
   static const String apiPrefix = '/api';
 
-  // Auth endpoints
+  // Auth endpoints (backend: /api/auth/...)
   static const String loginEndpoint = '$apiPrefix/auth/login/';
   static const String registerStudentEndpoint = '$apiPrefix/auth/register/student/';
   static const String registerFacultyEndpoint = '$apiPrefix/auth/register/faculty/';
@@ -26,15 +26,15 @@ class ApiConfig {
   // Users endpoints
   static const String usersEndpoint = '$apiPrefix/users/';
 
-  // Projects endpoints
+  // Projects endpoints (backend: /api/projects/...)
   static const String projectsEndpoint = '$apiPrefix/projects/';
   static const String joinRequestsEndpoint = '$apiPrefix/requests/';
   static const String milestonesEndpoint = '$apiPrefix/milestones/';
 
-  // Teams endpoints
+  // Teams endpoints (backend: /api/teams/...)
   static const String teamsEndpoint = '$apiPrefix/teams/';
 
-  // Messaging endpoints
+  // Messaging endpoints (backend: /api/messaging/...)
   static const String conversationsEndpoint = '$apiPrefix/messaging/conversations/';
   static const String messagesEndpoint = '$apiPrefix/messaging/messages/';
 
@@ -43,10 +43,12 @@ class ApiConfig {
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const Duration sendTimeout = Duration(seconds: 30);
 
-  // Get base URL based on platform
+  /// Get base URL based on platform / build-time define.
+  /// You can override with:
+  /// flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
   static String getBaseUrl() {
-    // You can add logic here to detect platform and return appropriate URL
-    // For now, returning the default localhost URL
+    const defined = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+    if (defined.isNotEmpty) return defined;
     return baseUrl;
   }
 }
